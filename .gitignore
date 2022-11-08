@@ -1,0 +1,5 @@
+#排除build/这个文件夹里的内容
+*/build/*
+
+# 不排除.gitignore
+!.gitignore
