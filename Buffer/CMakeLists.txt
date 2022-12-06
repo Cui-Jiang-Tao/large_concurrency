@@ -24,7 +24,7 @@ aux_source_directory(./net SRC_NET)
 aux_source_directory(./net/poller SRC_NET_POLLER)
 
 # 编译SRC变量所代表的源代码文件，生成main可执行文件
-add_executable(main main.cpp ${SRC_BASE} ${SRC_NET} ${SRC_NET_POLLER})
+add_executable(main Reactor_test13.cpp ${SRC_BASE} ${SRC_NET} ${SRC_NET_POLLER})
 
 
 target_link_libraries(main pthread)
