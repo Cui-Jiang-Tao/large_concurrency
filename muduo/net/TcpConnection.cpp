@@ -182,6 +182,7 @@ void TcpConnection::connectEstablished() {
   assert(state_ == kConnecting);
   setState(kConnected);
   LOG_TRACE << "[3] usecount=" << shared_from_this().use_count();
+  // enable_shared_from_this是一个以其派生类为模板类型参数的基类模板，继承它，派生类的this指针就能变成一个shared_ptr。
   channel_->tie(shared_from_this());
   channel_->enableReading(); // TcpConnection所对应的通道加入到Poller关注
 
@@ -251,11 +252,9 @@ void TcpConnection::handleWrite() {
           loop_->queueInLoop(
               boost::bind(writeCompleteCallback_, shared_from_this()));
         }
-        if (state_ ==
-            kDisconnecting) // 发送缓冲区已清空并且连接状态是kDisconnecting,
-                            // 要关闭连接
-        {
-          shutdownInLoop(); // 关闭连接
+        // 发送缓冲区已清空并且连接状态是kDisconnecting，要关闭连接
+        if (state_ == kDisconnecting) {
+          shutdownInLoop(); // 只关闭写的这一半，进入半关闭状态(close SHUT_WR)
         }
       } else {
         LOG_TRACE << "I am going to write more data";

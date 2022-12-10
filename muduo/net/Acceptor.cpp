@@ -28,12 +28,13 @@ Acceptor::Acceptor(EventLoop *loop, const InetAddress &listenAddr)
       acceptChannel_(loop, acceptSocket_.fd()), listenning_(false),
       idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {
   assert(idleFd_ >= 0);
-  acceptSocket_.setReuseAddr(true);
+  acceptSocket_.setReuseAddr(true); // 设置了监听套接字地址复用
   acceptSocket_.bindAddress(listenAddr);
   acceptChannel_.setReadCallback(boost::bind(&Acceptor::handleRead, this));
 }
 
 Acceptor::~Acceptor() {
+  // 移除Channel需要保证它处于：kNoneEvent状态
   acceptChannel_.disableAll();
   acceptChannel_.remove();
   ::close(idleFd_);

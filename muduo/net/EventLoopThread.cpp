@@ -43,6 +43,7 @@ EventLoop *EventLoopThread::startLoop() {
 void EventLoopThread::threadFunc() {
   EventLoop loop;
 
+  // 线程初始化函数
   if (callback_) {
     callback_(&loop);
   }

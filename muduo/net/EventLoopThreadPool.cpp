@@ -35,6 +35,7 @@ void EventLoopThreadPool::start(const ThreadInitCallback &cb) {
     loops_.push_back(
         t->startLoop()); // 启动EventLoopThread线程，在进入事件循环之前，会调用cb
   }
+
   if (numThreads_ == 0 && cb) {
     // 只有一个EventLoop，在这个EventLoop进入事件循环之前，调用cb
     cb(baseLoop_);
@@ -45,7 +46,7 @@ EventLoop *EventLoopThreadPool::getNextLoop() {
   baseLoop_->assertInLoopThread();
   EventLoop *loop = baseLoop_;
 
-  // 如果loops_为空，则loop指向baseLoop_
+  // 如果loops_为空(即numThreads_为0)，则loop指向baseLoop_
   // 如果不为空，按照round-robin（RR，轮叫）的调度方式选择一个EventLoop
   if (!loops_.empty()) {
     // round-robin
@@ -55,5 +56,6 @@ EventLoop *EventLoopThreadPool::getNextLoop() {
       next_ = 0;
     }
   }
+
   return loop;
 }

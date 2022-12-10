@@ -1,40 +1,32 @@
-#include "Channel.h"
 #include "EventLoop.h"
-
-#include <boost/bind.hpp>
+#include "EventLoopThread.h"
 
 #include <stdio.h>
-#include <sys/timerfd.h>
 
 using namespace muduo;
 using namespace muduo::net;
 
-EventLoop *g_loop;
-int timerfd;
-
-void timeout(Timestamp receiveTime) {
-  printf("Timeout!\n");
-  uint64_t howmany;
-  ::read(timerfd, &howmany,
-         sizeof howmany); // 这里一定要读走，不然处于高电平状态一直触发
-  g_loop->quit();
+void runInThread() {
+  printf("runInThread(): pid = %d, tid = %d\n", getpid(), CurrentThread::tid());
 }
 
-int main(void) {
-  EventLoop loop;
-  g_loop = &loop;
+int main() {
+  printf("main(): pid = %d, tid = %d\n", getpid(), CurrentThread::tid());
 
-  timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-  Channel channel(&loop, timerfd);
-  channel.setReadCallback(boost::bind(timeout, _1));
-  channel.enableReading();
+  EventLoopThread loopThread;
+  EventLoop *loop = loopThread.startLoop();
 
-  struct itimerspec howlong;
-  bzero(&howlong, sizeof howlong);
-  howlong.it_value.tv_sec = 1;
-  ::timerfd_settime(timerfd, 0, &howlong, NULL);
+  // 异步调用runInThread，即将runInThread添加到loop对象所在IO线程，让该IO线程执行
+  loop->runInLoop(runInThread);
 
-  loop.loop();
+  sleep(1);
 
-  ::close(timerfd);
+  // runAfter内部也调用了runInLoop，所以这里也是异步调用
+  loop->runAfter(2, runInThread);
+
+  sleep(3);
+
+  loop->quit();
+
+  printf("exit main().\n");
 }

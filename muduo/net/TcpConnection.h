@@ -108,19 +108,20 @@ private:
   // we don't expose those classes to client.
   boost::scoped_ptr<Socket> socket_;
   boost::scoped_ptr<Channel> channel_;
-  InetAddress localAddr_;
-  InetAddress peerAddr_;
-  ConnectionCallback connectionCallback_;
-  MessageCallback messageCallback_;
+  InetAddress localAddr_;                 // 保存本机IP地址
+  InetAddress peerAddr_;                  // 对等方IP地址
+  ConnectionCallback connectionCallback_; // 连接的建立
+  MessageCallback messageCallback_;       // 消息的到达
   // 数据发送完毕回调函数，即所有的用户数据都已拷贝到内核缓冲区时回调该函数
   // outputBuffer_被清空也会回调该函数，可以理解为低水位标回调函数
-  WriteCompleteCallback writeCompleteCallback_;
+  WriteCompleteCallback writeCompleteCallback_; // 消息发送完毕
   HighWaterMarkCallback highWaterMarkCallback_; // 高水位标回调函数
-  CloseCallback closeCallback_;
-  size_t highWaterMark_; // 高水位标
-  Buffer inputBuffer_;   // 应用层接收缓冲区
-  Buffer outputBuffer_;  // 应用层发送缓冲区
-  boost::any context_;   // 绑定一个未知类型的上下文对象
+  CloseCallback closeCallback_;                 // 连接的断开
+  size_t highWaterMark_;                        // 高水位标
+  Buffer inputBuffer_;                          // 应用层接收缓冲区
+  // FIXME: use list<Buffer> as output buffer.
+  Buffer outputBuffer_; // 应用层发送缓冲区
+  boost::any context_;  // 绑定一个未知类型的上下文对象
 };
 
 typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;

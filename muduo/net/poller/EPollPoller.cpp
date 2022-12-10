@@ -145,7 +145,7 @@ void EPollPoller::removeChannel(Channel *channel) {
 
   int index = channel->index();
 
-  //很奇怪，要移除的Channel对象应该就只能是kDeleted的啊？？？
+  // 要移除的Channel对象应该就可能处于关联状态、也可能处于被取消关注状态(kDeleted)
   assert(index == kAdded || index == kDeleted);
 
   size_t n = channels_.erase(fd);

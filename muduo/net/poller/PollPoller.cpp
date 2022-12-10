@@ -73,8 +73,7 @@ void PollPoller::fillActiveChannels(int numEvents,
 }
 
 /**
- * 主要时将Channel负责的文件描述符(fd)注册到Poller对象中, 或更新Poller对象 old
- * fd_channels
+ * 主要时将Channel负责的文件描述符(fd)注册到Poller对象中, 或更新Poller对象
  */
 void PollPoller::updateChannel(Channel *channel) {
   Poller::assertInLoopThread();

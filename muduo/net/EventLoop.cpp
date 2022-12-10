@@ -61,7 +61,7 @@ EventLoop::EventLoop()
 
   wakeupChannel_->setReadCallback(boost::bind(&EventLoop::handleRead, this));
   // we are always reading the wakeupfd
-  //这里设置回将wakeupChannel_注册到Poller对象中，实现事件循环
+  //这里设置会将wakeupChannel_注册到Poller对象中，实现事件循环
   wakeupChannel_->enableReading();
 }
 
@@ -137,9 +137,10 @@ void EventLoop::queueInLoop(const Functor &cb) {
 
   /**
    * 1. 调用queueInLoop的线程不是IO线程需要唤醒
-   * 2. 或者调用queueInLoop的线程是IO线程，并且此时正在调用任务队列(pendingFunctors_)，需要唤醒。只有I/O线程的事件回调中调用queueInLoop才不需要唤醒
-   *    =》这里不明白，既然调用queueInLoop的线程是IO线程，IO线程怎么会此时正在调用pendingFunctors_？？？
-   *        =》 因为I/O处于callingPendingFunctors_状态，任务队列(pendingFunctors_)中的任务执行完可能会处于阻塞状态(poll没事件发生)，新加入的任务无法执行。
+   * 2. 或者调用queueInLoop的线程是IO线程，并且此时正在调用任务队列(pendingFunctors_)，需要唤醒。
+   *     =》 因为I/O处于callingPendingFunctors_状态，任务队列(pendingFunctors_)中的任务执行完可能会处于阻塞状态(poll没事件发生)，新加入的任务无法执行。
+   * 
+   * 只有I/O线程的事件回调中调用queueInLoop才不需要唤醒
    */
   if (!isInLoopThread() || callingPendingFunctors_) {
     wakeup();

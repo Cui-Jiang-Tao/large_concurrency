@@ -63,7 +63,7 @@ void TcpServer::start() {
   }
 
   if (!acceptor_->listenning()) {
-    // get_pointer返回原生指针
+    // get_pointer：返回原生指针
     loop_->runInLoop(boost::bind(&Acceptor::listen, get_pointer(acceptor_)));
   }
 }
@@ -98,7 +98,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
   conn->setMessageCallback(messageCallback_);
   conn->setWriteCompleteCallback(writeCompleteCallback_);
 
-  conn->setCloseCallback(boost::bind(&TcpServer::removeConnection, this, _1));
+  conn->setCloseCallback(
+      boost::bind(&TcpServer::removeConnection, this, _1)); // FIXME: unsafe
 
   // conn->connectEstablished();
   ioLoop->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));
@@ -123,6 +124,7 @@ void TcpServer::removeConnection(const TcpConnectionPtr &conn) {
   LOG_TRACE << "[10] usecount=" << conn.use_count();
   */
 
+  // FIXME: unsafe
   loop_->runInLoop(boost::bind(&TcpServer::removeConnectionInLoop, this, conn));
 }
 
