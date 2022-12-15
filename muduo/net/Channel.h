@@ -103,6 +103,7 @@ private:
   int index_; // used by Poller.表示在poll的事件数组中的序号，初始值为-1
   bool logHup_; // for POLLHUP  对方描述符挂起
 
+  // fd所代表的对象，如：TcpConnection代表的是客户端连接的套接字，这个TcpConnection对象与这个Channel对象关联起来了。
   boost::weak_ptr<void> tie_;
   bool tied_;
   bool eventHandling_; // 是否处于处理事件中

@@ -50,7 +50,7 @@ void Channel::remove() {
 void Channel::handleEvent(Timestamp receiveTime) {
   boost::shared_ptr<void> guard;
   if (tied_) {
-    guard = tie_.lock(); //确定shared_ptr指针还存在
+    guard = tie_.lock(); // 确定shared_ptr指针还存在
     if (guard) {
       handleEventWithGuard(receiveTime);
     }

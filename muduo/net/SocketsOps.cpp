@@ -163,7 +163,7 @@ void sockets::shutdownWrite(int sockfd) {
   }
 }
 
-// 将sockaddr_in 转换成ip和端口的形式保存到buf当中
+// 主要调用toIP函数，将sockaddr_in.sin_addr 转换成ip和端口的形式保存到buf当中
 void sockets::toIpPort(char *buf, size_t size, const struct sockaddr_in &addr) {
   char host[INET_ADDRSTRLEN] = "INVALID";
   toIp(host, sizeof host, addr);
@@ -175,10 +175,11 @@ void sockets::toIpPort(char *buf, size_t size, const struct sockaddr_in &addr) {
 // 转换ip
 void sockets::toIp(char *buf, size_t size, const struct sockaddr_in &addr) {
   assert(size >= INET_ADDRSTRLEN);
-  // 转换成点分十进制
+  // 转换成点分十进制的形式
   ::inet_ntop(AF_INET, &addr.sin_addr, buf, static_cast<socklen_t>(size));
 }
 
+// 与上面两个函数相反，将点分十进制ip转换为一个sockaddr_in.sin_addr
 void sockets::fromIpPort(const char *ip, uint16_t port,
                          struct sockaddr_in *addr) {
   addr->sin_family = AF_INET;
@@ -199,6 +200,7 @@ int sockets::getSocketError(int sockfd) {
   }
 }
 
+// 本地地址
 struct sockaddr_in sockets::getLocalAddr(int sockfd) {
   struct sockaddr_in localaddr;
   bzero(&localaddr, sizeof localaddr);
@@ -209,6 +211,7 @@ struct sockaddr_in sockets::getLocalAddr(int sockfd) {
   return localaddr;
 }
 
+// 对等端地址
 struct sockaddr_in sockets::getPeerAddr(int sockfd) {
   struct sockaddr_in peeraddr;
   bzero(&peeraddr, sizeof peeraddr);
