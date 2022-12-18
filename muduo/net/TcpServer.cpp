@@ -45,7 +45,7 @@ TcpServer::~TcpServer() {
     it->second.reset(); // 释放当前所控制的对象，引用计数减一
     conn->getLoop()->runInLoop(
         boost::bind(&TcpConnection::connectDestroyed, conn));
-    conn.reset(); // 释放当前所控制的对象，引用计数减一
+    conn.reset(); // 可以不调用
   }
 }
 
@@ -68,6 +68,9 @@ void TcpServer::start() {
   }
 }
 
+/**
+ * Acceptor 绑定的"读事件"回调函数是newConnection，当有客户端连接时该函数将会被调用：
+ */
 void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
   loop_->assertInLoopThread();
   // 按照轮叫的方式选择一个EventLoop

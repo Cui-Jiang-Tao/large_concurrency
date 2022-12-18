@@ -140,7 +140,7 @@ void TcpConnection::sendInLoop(const void *data, size_t len) {
   }
 
   assert(remaining <= len);
-  // 没有错误，并且还有未写完的数据（说明内核发送缓冲区满，要将未写完的数据添加到output
+  // 没有错误，并且还有未写完的数据（说明内核发送缓冲区满了，要将未写完的数据添加到output
   // buffer中）
   if (!error && remaining > 0) {
     LOG_TRACE << "I am going to write more data";
@@ -281,10 +281,10 @@ void TcpConnection::handleClose() {
   channel_->disableAll();
 
   TcpConnectionPtr guardThis(shared_from_this());
-  connectionCallback_(guardThis); // 这一行，可以不调用
+  connectionCallback_(guardThis); // 调用连接建立或关闭后的处理函数
   LOG_TRACE << "[7] usecount=" << guardThis.use_count();
   // must be the last line
-  closeCallback_(guardThis); // 调用TcpServer::removeConnection
+  closeCallback_(guardThis); // 调用TcpServer::removeConnection或TcpClient::removeConnection
   LOG_TRACE << "[11] usecount=" << guardThis.use_count();
 }
 

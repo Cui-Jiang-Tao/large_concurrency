@@ -38,17 +38,24 @@ public:
   int fd() const { return sockfd_; }
 
   /// abort if address in use
+  // 调用bind绑定服务器IP端口
   void bindAddress(const InetAddress &localaddr);
+
   /// abort if address in use
+  // 调用listen监听套接字
   void listen();
 
   /// On success, returns a non-negative integer that is
   /// a descriptor for the accepted socket, which has been
   /// set to non-blocking and close-on-exec. *peeraddr is assigned.
   /// On error, -1 is returned, and *peeraddr is untouched.
+  // 调用accept接受新客户连接请求
   int accept(InetAddress *peeraddr);
 
+  // 调用shutdown关闭服务端写通道
   void shutdownWrite();
+
+  /* 下面四个函数都是调用setsockopt来设置一些socket选项 */
 
   /// Nagle
   /// 算法是频繁发一些小的数据包，会攒在一起发送，合并包发送。一般来说这个延迟时间是200毫秒
@@ -68,11 +75,11 @@ public:
   /// Enable/disable SO_KEEPALIVE
   ///
   //
-  //TCP keepalive是指定期探测连接是否存在，如果应用层有心跳的话，这个选项不是必需要设置的
+  // TCP keepalive是指定期探测连接是否存在，如果应用层有心跳的话，这个选项不是必需要设置的
   void setKeepAlive(bool on);
 
 private:
-  const int sockfd_;
+  const int sockfd_; //服务器监听套接字文件描述符
 };
 
 } // namespace net

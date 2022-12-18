@@ -23,8 +23,13 @@ aux_source_directory(./base SRC_BASE)
 aux_source_directory(./net SRC_NET)
 aux_source_directory(./net/poller SRC_NET_POLLER)
 
+# 例子
+include_directories(./simple/echo)
+aux_source_directory(./simple/echo SRC_SIMPLE_ECHO)
+
 # 编译SRC变量所代表的源代码文件，生成main可执行文件
-add_executable(main main.cpp ${SRC_BASE} ${SRC_NET} ${SRC_NET_POLLER})
+add_executable(main main.cpp ${SRC_BASE} ${SRC_NET} ${SRC_NET_POLLER} 
+                ${SRC_SIMPLE_ECHO})
 
 
 target_link_libraries(main pthread)

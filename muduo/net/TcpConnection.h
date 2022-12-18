@@ -110,13 +110,13 @@ private:
   boost::scoped_ptr<Channel> channel_;
   InetAddress localAddr_;                 // 保存本机IP地址
   InetAddress peerAddr_;                  // 对等方IP地址
-  ConnectionCallback connectionCallback_; // 连接的建立
-  MessageCallback messageCallback_;       // 消息的到达
+  ConnectionCallback connectionCallback_; // 连接建立或关闭后的处理函数
+  MessageCallback messageCallback_;       // 收到消息后的处理函数
   // 数据发送完毕回调函数，即所有的用户数据都已拷贝到内核缓冲区时回调该函数
   // outputBuffer_被清空也会回调该函数，可以理解为低水位标回调函数
-  WriteCompleteCallback writeCompleteCallback_; // 消息发送完毕
+  WriteCompleteCallback writeCompleteCallback_; // 消息发送完后的处理函数
   HighWaterMarkCallback highWaterMarkCallback_; // 高水位标回调函数
-  CloseCallback closeCallback_;                 // 连接的断开
+  CloseCallback closeCallback_;                 // 连接关闭后的处理函数
   size_t highWaterMark_;                        // 高水位标
   Buffer inputBuffer_;                          // 应用层接收缓冲区
   // FIXME: use list<Buffer> as output buffer.
@@ -124,7 +124,7 @@ private:
   boost::any context_;  // 绑定一个未知类型的上下文对象
 };
 
-typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
+// typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
 
 } // namespace net
 } // namespace muduo

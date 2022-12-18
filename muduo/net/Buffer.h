@@ -107,11 +107,10 @@ public:
     writerIndex_ = kCheapPrepend;
   }
 
-  string retrieveAllAsString() {
-    return retrieveAsString(readableBytes());
-    ;
-  }
+  // 获取缓冲区所有数据，并以string返回。
+  string retrieveAllAsString() { return retrieveAsString(readableBytes()); }
 
+  // 获取缓冲区中长度为len的数据，并以strnig返回
   string retrieveAsString(size_t len) {
     assert(len <= readableBytes());
     string result(peek(), len);
@@ -125,6 +124,7 @@ public:
 
   void append(const StringPiece &str) { append(str.data(), str.size()); }
 
+  // 将data数据添加到缓冲区中
   void append(const char * /*restrict*/ data, size_t len) {
     ensureWritableBytes(len);
     std::copy(data, data + len, beginWrite());
@@ -136,6 +136,7 @@ public:
   }
 
   // 确保缓冲区可写空间>=len，如果不足则扩充
+  // 当你打算向缓冲区写入长度为len的数据之前，先调用这个函数，这个函数会检查你的缓冲区可写空间能不能装下长度为len的数据，如果不能，就动态扩容。
   void ensureWritableBytes(size_t len) {
     if (writableBytes() < len) {
       makeSpace(len);
@@ -245,6 +246,7 @@ public:
   ///
   /// It may implement with readv(2)
   /// @return result of read(2), @c errno is saved
+  // 客户端发来数据，readFd从该TCP接收缓冲区中将数据读出来并放到Buffer中。
   ssize_t readFd(int fd, int *savedErrno);
 
 private:
