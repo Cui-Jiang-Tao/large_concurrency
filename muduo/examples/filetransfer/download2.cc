@@ -2,8 +2,6 @@
 #include "Logging.h"
 #include "TcpServer.h"
 
-#include <boost/scoped_ptr.hpp>
-
 #include <stdio.h>
 #include <unistd.h>
 
@@ -16,7 +14,6 @@ void onHighWaterMark(const TcpConnectionPtr &conn, size_t len) {
 
 const int kBufSize = 64 * 1024;
 const char *g_file = NULL;
-typedef std::shared_ptr<FILE> FilePtr;
 
 void onConnection(const TcpConnectionPtr &conn) {
   LOG_INFO << "FileServer - " << conn->peerAddress().toIpPort() << " -> "
@@ -29,8 +26,7 @@ void onConnection(const TcpConnectionPtr &conn) {
 
     FILE *fp = ::fopen(g_file, "rb");
     if (fp) {
-      FilePtr ctx(fp, ::fclose);
-      conn->setContext(ctx);
+      conn->setContext(fp);
       char buf[kBufSize];
       size_t nread = ::fread(buf, 1, sizeof buf, fp);
       conn->send(buf, static_cast<int>(nread));
@@ -38,16 +34,27 @@ void onConnection(const TcpConnectionPtr &conn) {
       conn->shutdown();
       LOG_INFO << "FileServer - no such file";
     }
+  } else {
+    if (!conn->getContext().empty()) {
+      FILE *fp = boost::any_cast<FILE *>(conn->getContext());
+      if (fp) {
+        ::fclose(fp);
+      }
+    }
   }
 }
 
 void onWriteComplete(const TcpConnectionPtr &conn) {
-  const FilePtr &fp = boost::any_cast<const FilePtr &>(conn->getContext());
+  FILE *fp = boost::any_cast<FILE *>(conn->getContext());
   char buf[kBufSize];
-  size_t nread = ::fread(buf, 1, sizeof buf, boost::get_pointer(fp));
+  size_t nread = ::fread(buf, 1, sizeof buf, fp);
   if (nread > 0) {
+    // 会触发onWriteComplete回调函数
     conn->send(buf, static_cast<int>(nread));
   } else {
+    ::fclose(fp);
+    fp = NULL;
+    conn->setContext(fp);
     conn->shutdown();
     LOG_INFO << "FileServer - done";
   }

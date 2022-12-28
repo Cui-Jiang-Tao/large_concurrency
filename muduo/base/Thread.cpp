@@ -6,6 +6,7 @@
 #include "Thread.h"
 #include "CurrentThread.h"
 #include "Exception.h"
+#include "Timestamp.h"
 //#include <muduo/base/Logging.h>
 
 #include <boost/static_assert.hpp>
@@ -31,6 +32,14 @@ __thread const char *t_threadName = "unknown";
 //断言pid_t的类型为int
 const bool sameType = boost::is_same<int, pid_t>::value;
 BOOST_STATIC_ASSERT(sameType);
+
+void CurrentThread::sleepUsec(int64_t usec) {
+  struct timespec ts = {0, 0};
+  ts.tv_sec = static_cast<time_t>(usec / Timestamp::kMicroSecondsPerSecond);
+  ts.tv_nsec =
+      static_cast<long>(usec % Timestamp::kMicroSecondsPerSecond * 1000);
+  ::nanosleep(&ts, NULL);
+}
 } // namespace CurrentThread
 
 namespace detail {
@@ -66,7 +75,8 @@ using namespace muduo;
 void CurrentThread::cacheTid() {
   if (t_cachedTid == 0) {
     t_cachedTid = detail::gettid();
-    t_tidStringLength = snprintf(t_tidString, sizeof t_tidString, "%5d ", t_cachedTid);
+    t_tidStringLength =
+        snprintf(t_tidString, sizeof t_tidString, "%5d ", t_cachedTid);
   }
 }
 
@@ -74,7 +84,7 @@ void CurrentThread::cacheTid() {
 bool CurrentThread::isMainThread() { return tid() == ::getpid(); }
 
 //创建线程的数量; 初始化，调用无参构造函数
-AtomicInt32 Thread::numCreated_; 
+AtomicInt32 Thread::numCreated_;
 
 Thread::Thread(const ThreadFunc &func, const string &name)
     : started_(false), pthreadId_(0), tid_(0), func_(func), name_(name) {
@@ -89,7 +99,7 @@ void Thread::start() {
   assert(!started_);
   started_ = true;
   errno = pthread_create(&pthreadId_, NULL, &startThread, this);
-  
+
   if (errno != 0) {
     // LOG_SYSFATAL << "Failed in pthread_create";
   }

@@ -2,21 +2,37 @@
 #include "Logging.h"
 #include "TcpServer.h"
 
-#include <boost/scoped_ptr.hpp>
-
 #include <stdio.h>
 #include <unistd.h>
 
 using namespace muduo;
 using namespace muduo::net;
 
+const char *g_file = NULL;
+
+// FIXME: use FileUtil::readFile()
+string readFile(const char *filename) {
+  string content;
+  FILE *fp = ::fopen(filename, "rb");
+  if (fp) {
+    // inefficient!!!
+    const int kBufSize = 1024 * 1024;
+    char iobuf[kBufSize];
+    ::setbuffer(fp, iobuf, sizeof iobuf);
+
+    char buf[kBufSize];
+    size_t nread = 0;
+    while ((nread = ::fread(buf, 1, sizeof buf, fp)) > 0) {
+      content.append(buf, nread);
+    }
+    ::fclose(fp);
+  }
+  return content;
+}
+
 void onHighWaterMark(const TcpConnectionPtr &conn, size_t len) {
   LOG_INFO << "HighWaterMark " << len;
 }
-
-const int kBufSize = 64 * 1024;
-const char *g_file = NULL;
-typedef std::shared_ptr<FILE> FilePtr;
 
 void onConnection(const TcpConnectionPtr &conn) {
   LOG_INFO << "FileServer - " << conn->peerAddress().toIpPort() << " -> "
@@ -25,29 +41,9 @@ void onConnection(const TcpConnectionPtr &conn) {
   if (conn->connected()) {
     LOG_INFO << "FileServer - Sending file " << g_file << " to "
              << conn->peerAddress().toIpPort();
-    conn->setHighWaterMarkCallback(onHighWaterMark, kBufSize + 1);
-
-    FILE *fp = ::fopen(g_file, "rb");
-    if (fp) {
-      FilePtr ctx(fp, ::fclose);
-      conn->setContext(ctx);
-      char buf[kBufSize];
-      size_t nread = ::fread(buf, 1, sizeof buf, fp);
-      conn->send(buf, static_cast<int>(nread));
-    } else {
-      conn->shutdown();
-      LOG_INFO << "FileServer - no such file";
-    }
-  }
-}
-
-void onWriteComplete(const TcpConnectionPtr &conn) {
-  const FilePtr &fp = boost::any_cast<const FilePtr &>(conn->getContext());
-  char buf[kBufSize];
-  size_t nread = ::fread(buf, 1, sizeof buf, boost::get_pointer(fp));
-  if (nread > 0) {
-    conn->send(buf, static_cast<int>(nread));
-  } else {
+    conn->setHighWaterMarkCallback(onHighWaterMark, 64 * 1024);
+    string fileContent = readFile(g_file);
+    conn->send(fileContent);
     conn->shutdown();
     LOG_INFO << "FileServer - done";
   }
@@ -62,7 +58,6 @@ int main(int argc, char *argv[]) {
     InetAddress listenAddr(2021);
     TcpServer server(&loop, listenAddr, "FileServer");
     server.setConnectionCallback(onConnection);
-    server.setWriteCompleteCallback(onWriteComplete);
     server.start();
     loop.loop();
   } else {

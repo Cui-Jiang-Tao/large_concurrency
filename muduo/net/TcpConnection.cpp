@@ -169,6 +169,8 @@ void TcpConnection::shutdown() {
 
 void TcpConnection::shutdownInLoop() {
   loop_->assertInLoopThread();
+
+  // 如果当前没有发送数据
   if (!channel_->isWriting()) {
     // we are not writing
     socket_->shutdownWrite();

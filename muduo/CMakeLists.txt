@@ -23,13 +23,53 @@ aux_source_directory(./base SRC_BASE)
 aux_source_directory(./net SRC_NET)
 aux_source_directory(./net/poller SRC_NET_POLLER)
 
-# 例子
-include_directories(./simple/echo)
-aux_source_directory(./simple/echo SRC_SIMPLE_ECHO)
+# 所有例子
+####################################
+
+######## simple
+# echo
+include_directories(./examples/simple/echo)
+set(SRC_SIMPLE_ECHO ./examples/simple/echo/echo.cpp)
+
+# discard
+include_directories(./examples/simple/discard)
+set(SRC_SIMPLE_DISCARD ./examples/simple/discard/discard.cpp)
+
+# daytime
+include_directories(./examples/simple/daytime)
+set(SRC_SIMPLE_DAYTIME ./examples/simple/daytime/daytime.cpp)
+
+# time
+include_directories(./examples/simple/time)
+set(SRC_SIMPLE_TIME ./examples/simple/time/TimeServer.cpp)
+
+# chargen
+include_directories(./examples/simple/chargen)
+set(SRC_SIMPLE_CHARGEN ./examples/simple/chargen/chargen.cpp)
+
+set(SRC_SIMPLE ${SRC_SIMPLE_ECHO} ${SRC_SIMPLE_DISCARD} ${SRC_SIMPLE_TIME} ${SRC_SIMPLE_CHARGEN} ${SRC_SIMPLE_DAYTIME})
+#####################################
+
+# twisted
+# include_directories(./examples/twisted/finger)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger01.cpp)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger02.cpp)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger03.cpp)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger04.cpp)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger05.cpp)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger06.cpp)
+# set(SRC_TWISTED_FINGER ./examples/twisted/finger/finger07.cpp)
+
+# set(SRC_TWISTED ${SRC_TWISTED_FINGER})
+#####################################
+
+# examples
+set(SRC_EXAMPLES  ${SRC_SIMPLE})
+#####################################
 
 # 编译SRC变量所代表的源代码文件，生成main可执行文件
 add_executable(main main.cpp ${SRC_BASE} ${SRC_NET} ${SRC_NET_POLLER} 
-                ${SRC_SIMPLE_ECHO})
+                ${SRC_EXAMPLES})
 
 
 target_link_libraries(main pthread)

@@ -55,7 +55,7 @@ public:
   void send(const void *message, size_t len);
   void send(const StringPiece &message);
   // void send(Buffer&& message); // C++11
-  void send(Buffer *message); // this one will swap data
+  void send(Buffer *message); // this one will swap data without copying
   void shutdown();            // NOT thread safe, no simultaneous calling
   void setTcpNoDelay(bool on);
 
